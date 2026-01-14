@@ -6,6 +6,7 @@ export type CertCheckResult = {
   checkedAt: string;
   validFrom?: string;
   validTo?: string;
+  daysRemaining?: number;
 };
 
 export async function checkCert(host: string, port: number): Promise<CertCheckResult> {
@@ -30,17 +31,24 @@ export async function checkCert(host: string, port: number): Promise<CertCheckRe
           }
 
           // Essas propriedades no Node são strings em formato legível (ex.: "Jan  9 00:00:00 2026 GMT")
-          const validFrom = cert.valid_from;
-          const validTo = cert.valid_to;
+          const validFromRaw = cert.valid_from;
+          const validToRaw = cert.valid_to;
 
+          const validFromDate = new Date(validFromRaw);
+          const validToDate = new Date(validToRaw);
+
+          const now = new Date();
+
+          const daysRemaining = daysBetween(now, validToDate);
           socket.end();
 
           resolve({
             host,
             port,
             checkedAt,
-            validFrom,
-            validTo
+            validFrom: validFromDate.toISOString(),
+            validTo: validToDate.toISOString(),
+            daysRemaining
           });
         } catch (err) {
           socket.end();
@@ -56,3 +64,10 @@ export async function checkCert(host: string, port: number): Promise<CertCheckRe
     });
   });
 }
+
+function daysBetween(now: Date, future: Date): number {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diffMs = future.getTime() - now.getTime();
+  return Math.floor(diffMs / msPerDay);
+}
+
