@@ -7,6 +7,8 @@ export type CertCheckResult = {
   validFrom?: string;
   validTo?: string;
   daysRemaining?: number;
+  isExpired?: boolean;
+  isExpiringSoon?: boolean;
 };
 
 export async function checkCert(host: string, port: number): Promise<CertCheckResult> {
@@ -40,6 +42,11 @@ export async function checkCert(host: string, port: number): Promise<CertCheckRe
           const now = new Date();
 
           const daysRemaining = daysBetween(now, validToDate);
+
+          const thresholdDays = 14;
+          const isExpired = daysRemaining < 0;
+          const isExpiringSoon = !isExpired && daysRemaining <= thresholdDays;
+
           socket.end();
 
           resolve({
@@ -48,7 +55,9 @@ export async function checkCert(host: string, port: number): Promise<CertCheckRe
             checkedAt,
             validFrom: validFromDate.toISOString(),
             validTo: validToDate.toISOString(),
-            daysRemaining
+            daysRemaining,
+            isExpired,
+            isExpiringSoon
           });
         } catch (err) {
           socket.end();
