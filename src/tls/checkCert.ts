@@ -1,4 +1,6 @@
 import tls from "node:tls";
+import { config } from "../config";  
+
 
 export type CertCheckResult = {
   host: string;
@@ -43,7 +45,7 @@ export async function checkCert(host: string, port: number): Promise<CertCheckRe
 
           const daysRemaining = daysBetween(now, validToDate);
 
-          const thresholdDays = 14;
+          const thresholdDays = config.thresholdDays;
           const isExpired = daysRemaining < 0;
           const isExpiringSoon = !isExpired && daysRemaining <= thresholdDays;
 
