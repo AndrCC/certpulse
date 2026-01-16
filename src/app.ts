@@ -1,6 +1,8 @@
 import express from "express";
 import { checkCert } from "./tls/checkCert";
 import { addTarget, listTargets } from "./targets/store";
+import { config } from "./config";
+import { runPollOnce } from "./scheduler/poller";
 
 const app = express();
 app.use(express.json());
@@ -66,4 +68,14 @@ const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 app.listen(port, () => {
   console.log(JSON.stringify({ level: "info", msg: "server_started", port }));
 });
+
+const pollIntervalMs = 60_000; 
+
+setInterval(() => {
+  runPollOnce(config.thresholdDays).catch((err) => {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error(JSON.stringify({ level: "error", msg: "poller_failed", message }));
+  });
+}, pollIntervalMs);
+
 
