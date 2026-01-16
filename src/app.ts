@@ -52,7 +52,12 @@ app.post("/targets", (req, res) => {
     return res.status(400).json({ error: "Invalid thresholdDays" });
   }
 
-  const created = addTarget({ name, host, port, thresholdDays });
+  const created = addTarget({ 
+    ...(name !== undefined ? { name } : {}),
+    host,
+    port,
+    ...(thresholdDays !== undefined ? { thresholdDays } : {}),
+   });
   return res.status(201).json(created);
 });
 
