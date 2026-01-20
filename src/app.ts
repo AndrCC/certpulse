@@ -3,6 +3,7 @@ import { checkCert } from "./tls/checkCert";
 import { addTarget, listTargets } from "./targets/store";
 import { config } from "./config";
 import { runPollOnce } from "./scheduler/poller";
+import { renderPrometheusMetrics } from "./metrics/prom";
 
 const app = express();
 app.use(express.json());
@@ -35,6 +36,11 @@ app.get("/check", async (req, res) => {
 
 app.get('/targets', (_req, res) => {
   res.status(200).json(listTargets());
+});
+
+app.get('/metrics', (_req, res) => {
+  res.setHeader("Content-Type", "text/plain; version=0.0.4");
+  res.status(200).send(renderPrometheusMetrics());
 });
 
 app.post("/targets", (req, res) => {
