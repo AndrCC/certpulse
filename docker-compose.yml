@@ -16,13 +16,15 @@ services:
       - prometheus
 
   certpulse:
-    image: node:20-alpine
+    image: node:20-bookworm-slim
     working_dir: /app
     volumes:
       - ./:/app
+      - ./data:/app/data
     command: sh -c "npm ci && npm run dev"
     environment:
       - PORT=3000
       - CERTPULSE_THRESHOLD_DAYS=14
+      - DB_PATH=/app/data/certpulse.db
     ports:
       - "3000:3000"
